@@ -1,0 +1,2595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoropal</title>
+    <style>
+        /* CSS Variables */
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent-color: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --text-color: #f8fafc;
+            --card-bg: rgba(30, 41, 59, 0.9);
+            --border-color: rgba(59, 130, 246, 0.3);
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --cute-pink: #ff9a9e;
+            --cute-purple: #ad6cff;
+            --cute-blue: #6cb4ee;
+            --cute-yellow: #ffd966;
+        }
+
+        .light-mode {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --accent-color: #2563eb;
+            --accent-secondary: #7c3aed;
+            --text-color: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(37, 99, 235, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+            color: var(--text-color);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
+
+        /* Auth Modal */
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+
+        .auth-modal.active {
+            display: flex;
+        }
+
+        .auth-box {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .auth-tab.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0 1rem 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-secondary));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Navigation */
+        nav {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: var(--text-color);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .content-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 2px solid var(--border-color);
+            display: none;
+            animation: fadeIn 0.5s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Home Section */
+        .hero {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            padding: 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-color);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Check-in Calendar */
+        .calendar-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 2px solid var(--border-color);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .streak-counter {
+            background: linear-gradient(45deg, #f59e0b, #f97316);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .calendar-day.checked {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .calendar-day.today {
+            border-color: var(--warning-color);
+        }
+
+        .check-in-btn {
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-secondary));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 1.5rem auto;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .check-in-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .check-in-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Login Prompt */
+        .login-prompt {
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .login-prompt-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 1rem;
+            font-weight: bold;
+        }
+
+        /* Timer Section */
+        .timer-container {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .timer-display {
+            font-size: 6rem;
+            font-weight: bold;
+            margin: 2rem 0;
+            color: var(--accent-color);
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            font-family: monospace;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .timer-btn {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .timer-btn.start {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .timer-btn.pause {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .timer-btn.reset {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .timer-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .timer-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem auto;
+            max-width: 400px;
+        }
+
+        .preset-btn {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preset-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        .preset-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .timer-mode-indicator {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            color: var(--accent-color);
+        }
+
+        /* Todo Section */
+        .todo-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .todo-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .todo-input {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .todo-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .add-todo-btn {
+            padding: 0 2rem;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-secondary));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-todo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .todo-filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .filter-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .todo-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .todo-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .todo-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: var(--success-color);
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 1rem;
+        }
+
+        .todo-text.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .todo-delete {
+            padding: 0.5rem 1rem;
+            background: var(--danger-color);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .todo-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .todo-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .clear-completed {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-completed:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        /* Leaderboard Section */
+        .leaderboard-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .leaderboard-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .leaderboard-tab {
+            flex: 1;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-tab:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .leaderboard-tab.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th {
+            padding: 1rem;
+            text-align: left;
+            background: rgba(59, 130, 246, 0.2);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .leaderboard-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .leaderboard-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .rank {
+            font-weight: bold;
+        }
+
+        .rank-1 { color: gold; }
+        .rank-2 { color: silver; }
+        .rank-3 { color: #cd7f32; }
+
+        .user-rank-card {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border-radius: 15px;
+            border: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        /* CUTE STATS PAGE STYLES */
+        .stats-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .stats-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--cute-pink), var(--cute-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 154, 158, 0.1), rgba(173, 108, 255, 0.1));
+            border: 3px solid var(--border-color);
+            border-radius: 25px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--cute-pink);
+            box-shadow: 0 20px 40px rgba(255, 154, 158, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+            background: linear-gradient(45deg, var(--cute-pink), var(--cute-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .stat-progress {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .stat-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cute-pink), var(--cute-purple));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .stat-trend {
+            font-size: 0.9rem;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .trend-up {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+        }
+
+        .trend-down {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+        }
+
+        .trend-neutral {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+        }
+
+        /* Achievement Section */
+        .achievements-section {
+            margin-top: 4rem;
+            text-align: center;
+        }
+
+        .achievements-section h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, var(--cute-pink), var(--cute-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .achievement-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .achievement-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 154, 158, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+        }
+
+        .achievement-card:hover::before {
+            transform: rotate(45deg) translate(50%, 50%);
+        }
+
+        .achievement-card.unlocked {
+            border-color: var(--cute-pink);
+            box-shadow: 0 0 30px rgba(255, 154, 158, 0.3);
+        }
+
+        .achievement-card.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .achievement-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievement-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievement-progress {
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+
+        .achievement-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cute-pink), var(--cute-purple));
+            border-radius: 5px;
+        }
+
+        /* Weekly Activity Calendar */
+        .weekly-activity {
+            margin: 4rem 0;
+            text-align: center;
+        }
+
+        .weekly-activity h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, var(--cute-pink), var(--cute-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .activity-day {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .activity-day.active {
+            background: linear-gradient(135deg, var(--cute-pink), var(--cute-purple));
+            border-color: transparent;
+            transform: scale(1.05);
+        }
+
+        .activity-day-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .activity-day-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* Pet Companion */
+        .pet-companion {
+            margin: 3rem 0;
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(255, 154, 158, 0.2), rgba(173, 108, 255, 0.2));
+            border-radius: 30px;
+            border: 3px solid var(--border-color);
+        }
+
+        .pet-emoji {
+            font-size: 5rem;
+            animation: wave 2s infinite;
+            cursor: pointer;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+        }
+
+        .pet-message {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .pet-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .pet-stat {
+            text-align: center;
+        }
+
+        .pet-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--cute-pink);
+        }
+
+        .pet-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Mood Tracker */
+        .mood-tracker {
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .mood-tracker h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, var(--cute-pink), var(--cute-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mood-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .mood-btn {
+            font-size: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mood-btn:hover {
+            transform: scale(1.2);
+            border-color: var(--cute-pink);
+            background: rgba(255, 154, 158, 0.2);
+        }
+
+        .mood-btn.selected {
+            border-color: var(--cute-pink);
+            background: rgba(255, 154, 158, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Settings Section */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .setting-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 2px solid var(--border-color);
+        }
+
+        .setting-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #666;
+            border-radius: 13px;
+            cursor: pointer;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+
+        .toggle.active {
+            background: var(--accent-color);
+        }
+
+        .toggle.active::after {
+            left: 26px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success { background: var(--success-color); }
+        .notification.error { background: var(--danger-color); }
+        .notification.info { background: var(--accent-color); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .timer-display {
+                font-size: 4rem;
+            }
+            
+            .todo-header {
+                flex-direction: column;
+            }
+            
+            .add-todo-btn {
+                padding: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+            
+            .activity-grid {
+                gap: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calendar-grid {
+                gap: 4px;
+            }
+            
+            .calendar-day {
+                font-size: 0.8rem;
+            }
+            
+            .timer-display {
+                font-size: 3rem;
+            }
+            
+            .timer-presets {
+                grid-template-columns: 1fr;
+            }
+            
+            .todo-filters {
+                flex-wrap: wrap;
+            }
+            
+            .filter-btn {
+                flex: 1;
+            }
+            
+            .mood-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="auth-modal">
+        <div class="auth-box">
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="showAuthForm('login')">Login</button>
+                <button class="auth-tab" onclick="showAuthForm('register')">Register</button>
+            </div>
+            
+            <form class="auth-form active" id="login-form" onsubmit="login(event)">
+                <input type="text" class="auth-input" id="login-username" placeholder="Username" required>
+                <input type="password" class="auth-input" id="login-password" placeholder="Password" required>
+                <button type="submit" class="auth-btn">Login</button>
+                <button type="button" class="auth-btn" onclick="closeAuthModal()" style="margin-top: 0.5rem; background: #666;">Cancel</button>
+            </form>
+            
+            <form class="auth-form" id="register-form" onsubmit="register(event)">
+                <input type="text" class="auth-input" id="register-username" placeholder="Username (min 3 chars)" required minlength="3">
+                <input type="password" class="auth-input" id="register-password" placeholder="Password (min 6 chars)" required minlength="6">
+                <button type="submit" class="auth-btn">Register</button>
+                <button type="button" class="auth-btn" onclick="closeAuthModal()" style="margin-top: 0.5rem; background: #666;">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo" onclick="showSection('home')">Pomodoro Pal</div>
+        <div class="user-info" id="user-info" style="display: none;">
+            <div class="avatar" id="user-avatar">U</div>
+            <div>
+                <div id="user-name">User</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;" id="user-level">Level 1</div>
+            </div>
+            <button class="nav-btn" onclick="logout()" style="margin-left: 1rem;">Logout</button>
+        </div>
+        <div class="nav-links">
+            <button class="nav-btn active" onclick="showSection('home')">🏠 Home</button>
+            <button class="nav-btn" onclick="showSection('todo')">📝 To-Do</button>
+            <button class="nav-btn" onclick="showSection('timer')">⏱️ Timer</button>
+            <button class="nav-btn" onclick="showSection('stats')">📊 Cute Stats</button>
+            <button class="nav-btn" onclick="showSection('leaderboard')">🏆 Leaderboard</button>
+            <button class="nav-btn" onclick="showSection('settings')">⚙️ Settings</button>
+            <button class="nav-btn" onclick="openAuthModal()" id="login-btn">🔑 Login</button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Home Section -->
+        <div id="home" class="content-section active">
+            <div class="hero">
+                <h1>Welcome to Pomodoropal</h1>
+                <p>Boost your productivity with the Pomodoro Technique, track your tasks, and build consistent study habits.</p>
+            </div>
+
+            <!-- Check-in Calendar -->
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h2>📅 Study Check-in Calendar</h2>
+                    <div class="streak-counter">
+                        🔥 <span id="streak-count">0</span> Day Streak
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+                <button class="check-in-btn" id="check-in-btn" onclick="markCheckin()">
+                    ✅ Check-in Today
+                </button>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <div>Monthly Progress: <span id="month-checkins">0</span>/30 days</div>
+                    <progress id="month-progress" value="0" max="30" style="width: 100%; margin-top: 0.5rem;"></progress>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="features-grid">
+                <div class="feature-card" onclick="showSection('timer')">
+                    <div class="feature-icon">⏱️</div>
+                    <h3>Timer</h3>
+                    <p>Focus with Pomodoro technique</p>
+                </div>
+                <div class="feature-card" onclick="showSection('todo')">
+                    <div class="feature-icon">📝</div>
+                    <h3>To-Do List</h3>
+                    <p>Track and manage your tasks</p>
+                </div>
+                <div class="feature-card" onclick="showSection('stats')">
+                    <div class="feature-icon">📊</div>
+                    <h3>Cute Stats</h3>
+                    <p>Track your progress with adorable stats</p>
+                </div>
+                <div class="feature-card" onclick="showSection('leaderboard')">
+                    <div class="feature-icon">🏆</div>
+                    <h3>Leaderboard</h3>
+                    <p>Compete with other users</p>
+                </div>
+            </div>
+
+            <!-- Guest Info -->
+            <div id="guest-info" class="login-prompt" style="display: none;">
+                <p>👋 You're browsing as a guest. Login to save your progress and compete on leaderboards!</p>
+                <button class="login-prompt-btn" onclick="openAuthModal()">Login / Register</button>
+            </div>
+            
+            <!-- User Info -->
+            <div id="user-info-card" class="login-prompt" style="display: none;">
+                <p>👋 Welcome back, <span id="welcome-name"></span>!</p>
+                <p id="user-stats"></p>
+            </div>
+        </div>
+
+        <!-- To-Do Section -->
+        <div id="todo" class="content-section">
+            <h1 style="text-align: center; margin-bottom: 2rem;">📝 To-Do List</h1>
+            
+            <div class="todo-container">
+                <div class="todo-header">
+                    <input type="text" class="todo-input" id="todo-input" placeholder="Add a new task..." maxlength="100">
+                    <button class="add-todo-btn" onclick="addTodo()">Add Task</button>
+                </div>
+                
+                <div class="todo-filters">
+                    <button class="filter-btn active" onclick="filterTodos('all')">All</button>
+                    <button class="filter-btn" onclick="filterTodos('active')">Active</button>
+                    <button class="filter-btn" onclick="filterTodos('completed')">Completed</button>
+                </div>
+                
+                <ul class="todo-list" id="todo-list"></ul>
+                
+                <div class="todo-stats">
+                    <span id="todo-count">0 tasks remaining</span>
+                    <button class="clear-completed" onclick="clearCompleted()">Clear Completed</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer Section -->
+        <div id="timer" class="content-section">
+            <h1 style="text-align: center; margin-bottom: 1rem;">⏱️ Pomodoro Timer</h1>
+            
+            <div class="timer-container">
+                <div class="timer-mode-indicator" id="timer-mode">Focus Time</div>
+                <div class="timer-display" id="timer-display">25:00</div>
+                
+                <div class="timer-controls">
+                    <button class="timer-btn start" onclick="startTimer()">▶ Start</button>
+                    <button class="timer-btn pause" onclick="pauseTimer()">⏸ Pause</button>
+                    <button class="timer-btn reset" onclick="resetTimer()">↺ Reset</button>
+                </div>
+                
+                <div class="timer-presets">
+                    <button class="preset-btn active" onclick="setTimerMode('focus')">🎯 Focus (25m)</button>
+                    <button class="preset-btn" onclick="setTimerMode('short')">☕ Short Break (5m)</button>
+                    <button class="preset-btn" onclick="setTimerMode('long')">🌿 Long Break (15m)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cute Stats Section -->
+        <div id="stats" class="content-section">
+            <div class="stats-header">
+                <h1>📊 Your Cute Stats</h1>
+                <p>Tracking your progress with love! ✨</p>
+            </div>
+
+            <!-- Pet Companion -->
+            <div class="pet-companion" id="pet-companion" onclick="petInteraction()">
+                <div class="pet-emoji" id="pet-emoji">🦊</div>
+                <div class="pet-message" id="pet-message">Hello! I'm your study buddy! ✨</div>
+                <div class="pet-stats">
+                    <div class="pet-stat">
+                        <div class="pet-stat-value" id="pet-happiness">100</div>
+                        <div class="pet-stat-label">Happiness</div>
+                    </div>
+                    <div class="pet-stat">
+                        <div class="pet-stat-value" id="pet-energy">100</div>
+                        <div class="pet-stat-label">Energy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value" id="stat-streak">0</div>
+                    <div class="stat-label">Day Streak</div>
+                    <div class="stat-progress">
+                        <div class="stat-progress-fill" id="streak-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="stat-trend trend-up" id="streak-trend">↗️ +2 from last week</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="stat-checkins">0</div>
+                    <div class="stat-label">Total Check-ins</div>
+                    <div class="stat-progress">
+                        <div class="stat-progress-fill" id="checkins-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="stat-trend trend-neutral" id="checkins-trend">📊 On track</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-value" id="stat-sessions">0</div>
+                    <div class="stat-label">Focus Sessions</div>
+                    <div class="stat-progress">
+                        <div class="stat-progress-fill" id="sessions-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="stat-trend trend-up" id="sessions-trend">🎯 Keep going!</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value" id="stat-tasks">0</div>
+                    <div class="stat-label">Tasks Completed</div>
+                    <div class="stat-progress">
+                        <div class="stat-progress-fill" id="tasks-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="stat-trend" id="tasks-trend">✨ Great job!</div>
+                </div>
+            </div>
+
+            <!-- Weekly Activity -->
+            <div class="weekly-activity">
+                <h2>📅 This Week's Activity</h2>
+                <div class="activity-grid" id="activity-grid">
+                    <!-- Generated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Mood Tracker -->
+            <div class="mood-tracker">
+                <h2>😊 How are you feeling today?</h2>
+                <div class="mood-buttons">
+                    <button class="mood-btn" onclick="setMood('😊')">😊</button>
+                    <button class="mood-btn" onclick="setMood('😌')">😌</button>
+                    <button class="mood-btn" onclick="setMood('🤔')">🤔</button>
+                    <button class="mood-btn" onclick="setMood('😴')">😴</button>
+                    <button class="mood-btn" onclick="setMood('🤯')">🤯</button>
+                    <button class="mood-btn" onclick="setMood('🥳')">🥳</button>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="achievements-section">
+                <h2>🏆 Achievements</h2>
+                <div class="achievements-grid" id="achievements-grid">
+                    <!-- Generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Section -->
+        <div id="leaderboard" class="content-section">
+            <h1 style="text-align: center; margin-bottom: 2rem;">🏆 Leaderboard</h1>
+            
+            <div class="leaderboard-container">
+                <div class="leaderboard-tabs">
+                    <button class="leaderboard-tab active" onclick="showLeaderboardTab('streak')">🔥 Streak</button>
+                    <button class="leaderboard-tab" onclick="showLeaderboardTab('checkins')">📅 Check-ins</button>
+                    <button class="leaderboard-tab" onclick="showLeaderboardTab('sessions')">⏱️ Sessions</button>
+                </div>
+                
+                <table class="leaderboard-table" id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>User</th>
+                            <th id="leaderboard-stat-header">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body"></tbody>
+                </table>
+                
+                <div id="user-rank-card" class="user-rank-card" style="display: none;">
+                    <h3>Your Ranking</h3>
+                    <div style="font-size: 2rem; margin: 1rem 0;" id="user-rank"># -</div>
+                    <div id="user-rank-stats"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings" class="content-section">
+            <h1 style="text-align: center; margin-bottom: 2rem;">⚙️ Settings</h1>
+            
+            <div id="settings-guest-info" class="login-prompt" style="display: none;">
+                <p>🔒 Login to save your settings and sync across devices.</p>
+                <button class="login-prompt-btn" onclick="openAuthModal()">Login Now</button>
+            </div>
+            
+            <div class="settings-grid">
+                <div class="setting-card">
+                    <h3 style="margin-bottom: 1rem;">🎨 Appearance</h3>
+                    <div class="setting-option">
+                        <span>Dark/Light Mode</span>
+                        <div class="toggle" id="theme-toggle" onclick="toggleTheme()"></div>
+                    </div>
+                    <div class="setting-option">
+                        <span>Font Size</span>
+                        <select id="font-size" onchange="changeFontSize(this.value)">
+                            <option value="small">Small</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="setting-card">
+                    <h3 style="margin-bottom: 1rem;">🔔 Notifications</h3>
+                    <div class="setting-option">
+                        <span>Sound Effects</span>
+                        <div class="toggle active" id="sound-effects" onclick="toggleSetting('soundEffects')"></div>
+                    </div>
+                    <div class="setting-option">
+                        <span>Browser Notifications</span>
+                        <div class="toggle active" id="browser-notifications" onclick="toggleSetting('browserNotifications')"></div>
+                    </div>
+                </div>
+                
+                <div class="setting-card">
+                    <h3 style="margin-bottom: 1rem;">🐾 Pet Settings</h3>
+                    <div class="setting-option">
+                        <span>Pet Type</span>
+                        <select id="pet-type" onchange="changePet(this.value)">
+                            <option value="🦊">Fox</option>
+                            <option value="🐱">Cat</option>
+                            <option value="🐶">Dog</option>
+                            <option value="🐼">Panda</option>
+                            <option value="🐨">Koala</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ GLOBAL STATE ============
+        let currentUser = null;
+        let users = JSON.parse(localStorage.getItem('pomodoropal_users')) || [];
+        let isLoggedIn = false;
+        
+        // Timer variables
+        let timerInterval = null;
+        let timerSeconds = 25 * 60;
+        let timerRunning = false;
+        let timerMode = 'focus';
+        
+        // To-Do variables
+        let todos = [];
+        let currentFilter = 'all';
+        
+        // Leaderboard state
+        let currentLeaderboardTab = 'streak';
+        
+        // Pet variables
+        let petHappiness = 100;
+        let petEnergy = 100;
+        let petType = '🦊';
+        
+        // Mood tracking
+        let currentMood = null;
+        let moodHistory = JSON.parse(localStorage.getItem('moodHistory')) || [];
+        
+        // Achievement tracking
+        let achievements = [
+            { id: 'first_checkin', name: 'First Step', desc: 'Complete your first check-in', icon: '🌟', unlocked: false, progress: 0, target: 1 },
+            { id: 'streak_7', name: 'Week Warrior', desc: '7-day streak', icon: '🔥', unlocked: false, progress: 0, target: 7 },
+            { id: 'streak_30', name: 'Monthly Master', desc: '30-day streak', icon: '👑', unlocked: false, progress: 0, target: 30 },
+            { id: 'sessions_10', name: 'Focus Apprentice', desc: 'Complete 10 focus sessions', icon: '⏱️', unlocked: false, progress: 0, target: 10 },
+            { id: 'sessions_50', name: 'Focus Expert', desc: 'Complete 50 focus sessions', icon: '🎯', unlocked: false, progress: 0, target: 50 },
+            { id: 'tasks_20', name: 'Task Master', desc: 'Complete 20 tasks', icon: '📝', unlocked: false, progress: 0, target: 20 },
+            { id: 'tasks_100', name: 'Productivity Legend', desc: 'Complete 100 tasks', icon: '⚡', unlocked: false, progress: 0, target: 100 },
+            { id: 'checkins_30', name: 'Dedicated Scholar', desc: '30 total check-ins', icon: '📚', unlocked: false, progress: 0, target: 30 },
+            { id: 'perfect_week', name: 'Perfect Week', desc: 'Check-in every day for a week', icon: '🌟', unlocked: false, progress: 0, target: 7 }
+        ];
+
+        // ============ INITIALIZATION ============
+        window.onload = function() {
+            initializeData();
+            loadUserFromStorage();
+            updateUI();
+            generateCalendar();
+            loadTodos();
+            updateLeaderboard();
+            updateTimerDisplay();
+            updateStatsPage();
+            generateAchievements();
+            generateActivityGrid();
+            updatePetMessage();
+        };
+
+        function initializeData() {
+            // Create default demo user if no users exist
+            if (users.length === 0) {
+                const defaultUser = {
+                    id: '1',
+                    username: 'demo',
+                    password: 'demo123',
+                    createdAt: new Date().toISOString(),
+                    checkins: {},
+                    stats: {
+                        streak: 0,
+                        totalCheckins: 0,
+                        focusSessions: 0,
+                        totalMinutes: 0,
+                        level: 1,
+                        tasksCompleted: 0
+                    },
+                    settings: {
+                        theme: 'dark',
+                        fontSize: 'medium',
+                        soundEffects: true,
+                        browserNotifications: true,
+                        petType: '🦊'
+                    },
+                    todos: [],
+                    moodHistory: [],
+                    achievements: achievements
+                };
+                users.push(defaultUser);
+                saveUsers();
+            }
+        }
+
+        function loadUserFromStorage() {
+            const savedUser = localStorage.getItem('pomodoropal_currentUser');
+            if (savedUser) {
+                try {
+                    const userId = savedUser;
+                    currentUser = users.find(u => u.id === userId);
+                    if (currentUser) {
+                        isLoggedIn = true;
+                        if (currentUser.settings?.theme === 'light') {
+                            document.body.classList.add('light-mode');
+                            document.getElementById('theme-toggle').classList.add('active');
+                        }
+                        if (currentUser.settings?.petType) {
+                            petType = currentUser.settings.petType;
+                        }
+                        todos = currentUser.todos || [];
+                        moodHistory = currentUser.moodHistory || [];
+                        achievements = currentUser.achievements || achievements;
+                    }
+                } catch (e) {
+                    console.error('Error loading user:', e);
+                }
+            }
+        }
+
+        // ============ NOTIFICATION SYSTEM ============
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // ============ AUTH FUNCTIONS ============
+        function openAuthModal() {
+            document.getElementById('auth-modal').classList.add('active');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.remove('active');
+        }
+
+        function showAuthForm(form) {
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(form + '-form').classList.add('active');
+            document.querySelector(`.auth-tab[onclick="showAuthForm('${form}')"]`).classList.add('active');
+        }
+
+        function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                currentUser = user;
+                isLoggedIn = true;
+                localStorage.setItem('pomodoropal_currentUser', user.id);
+                
+                todos = user.todos || [];
+                moodHistory = user.moodHistory || [];
+                achievements = user.achievements || achievements;
+                
+                updateUI();
+                generateCalendar();
+                renderTodoList();
+                updateLeaderboard();
+                updateStatsPage();
+                closeAuthModal();
+                showNotification(`Welcome back, ${username}! 🎉`, 'success');
+            } else {
+                showNotification('Invalid username or password', 'error');
+            }
+        }
+
+        function register(event) {
+            event.preventDefault();
+            const username = document.getElementById('register-username').value.trim();
+            const password = document.getElementById('register-password').value.trim();
+            
+            if (username.length < 3) {
+                showNotification('Username must be at least 3 characters', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            if (users.some(u => u.username === username)) {
+                showNotification('Username already exists', 'error');
+                return;
+            }
+            
+            const newUser = {
+                id: Date.now().toString(),
+                username: username,
+                password: password,
+                createdAt: new Date().toISOString(),
+                checkins: {},
+                stats: {
+                    streak: 0,
+                    totalCheckins: 0,
+                    focusSessions: 0,
+                    totalMinutes: 0,
+                    level: 1,
+                    tasksCompleted: 0
+                },
+                settings: {
+                    theme: 'dark',
+                    fontSize: 'medium',
+                    soundEffects: true,
+                    browserNotifications: true,
+                    petType: '🦊'
+                },
+                todos: [],
+                moodHistory: [],
+                achievements: achievements
+            };
+            
+            users.push(newUser);
+            saveUsers();
+            
+            currentUser = newUser;
+            isLoggedIn = true;
+            localStorage.setItem('pomodoropal_currentUser', newUser.id);
+            
+            todos = [];
+            moodHistory = [];
+            
+            updateUI();
+            generateCalendar();
+            renderTodoList();
+            updateLeaderboard();
+            updateStatsPage();
+            closeAuthModal();
+            showNotification('Welcome to Pomodoropal! 🎉', 'success');
+        }
+
+        function logout() {
+            currentUser = null;
+            isLoggedIn = false;
+            localStorage.removeItem('pomodoropal_currentUser');
+            todos = [];
+            
+            updateUI();
+            generateCalendar();
+            renderTodoList();
+            updateLeaderboard();
+            updateStatsPage();
+            showNotification('Logged out successfully', 'info');
+        }
+
+        function saveUsers() {
+            localStorage.setItem('pomodoropal_users', JSON.stringify(users));
+        }
+
+        function saveUserData() {
+            if (isLoggedIn && currentUser) {
+                const index = users.findIndex(u => u.id === currentUser.id);
+                if (index !== -1) {
+                    users[index] = currentUser;
+                    saveUsers();
+                }
+            }
+        }
+
+        // ============ UI UPDATE FUNCTIONS ============
+        function updateUI() {
+            const userInfo = document.getElementById('user-info');
+            const loginBtn = document.getElementById('login-btn');
+            const guestInfo = document.getElementById('guest-info');
+            const userCard = document.getElementById('user-info-card');
+            const settingsGuestInfo = document.getElementById('settings-guest-info');
+            
+            if (isLoggedIn && currentUser) {
+                userInfo.style.display = 'flex';
+                loginBtn.style.display = 'none';
+                guestInfo.style.display = 'none';
+                userCard.style.display = 'block';
+                settingsGuestInfo.style.display = 'none';
+                
+                document.getElementById('user-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+                document.getElementById('user-name').textContent = currentUser.username;
+                document.getElementById('user-level').textContent = `Level ${currentUser.stats?.level || 1}`;
+                document.getElementById('welcome-name').textContent = currentUser.username;
+                document.getElementById('user-stats').textContent = 
+                    `${currentUser.stats?.totalCheckins || 0} check-ins • ${currentUser.stats?.focusSessions || 0} sessions`;
+                
+                document.getElementById('check-in-btn').disabled = false;
+            } else {
+                userInfo.style.display = 'none';
+                loginBtn.style.display = 'block';
+                guestInfo.style.display = 'block';
+                userCard.style.display = 'none';
+                settingsGuestInfo.style.display = 'block';
+                
+                document.getElementById('check-in-btn').disabled = true;
+            }
+            
+            updateCheckinButton();
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => 
+                b.textContent.includes(sectionId === 'todo' ? 'To-Do' : 
+                    sectionId === 'stats' ? 'Cute Stats' :
+                    sectionId.charAt(0).toUpperCase() + sectionId.slice(1))
+            );
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            if (sectionId === 'todo') renderTodoList();
+            if (sectionId === 'leaderboard') updateLeaderboard();
+            if (sectionId === 'stats') updateStatsPage();
+        }
+
+        // ============ CALENDAR FUNCTIONS ============
+        function generateCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            
+            // Add empty cells
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(createDayCell());
+            }
+            
+            // Add days
+            const checkins = currentUser?.checkins || {};
+            let monthCheckins = 0;
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const date = new Date(year, month, i);
+                const dateStr = date.toISOString().split('T')[0];
+                const isToday = i === today.getDate();
+                const isChecked = checkins[dateStr];
+                
+                if (isChecked) monthCheckins++;
+                
+                const cell = createDayCell(i, isChecked, isToday);
+                grid.appendChild(cell);
+            }
+            
+            document.getElementById('month-checkins').textContent = monthCheckins;
+            document.getElementById('month-progress').value = monthCheckins;
+            
+            if (currentUser) {
+                document.getElementById('streak-count').textContent = currentUser.stats?.streak || 0;
+            }
+        }
+
+        function createDayCell(day = '', isChecked = false, isToday = false) {
+            const cell = document.createElement('div');
+            cell.className = `calendar-day ${isChecked ? 'checked' : ''} ${isToday ? 'today' : ''}`;
+            if (day) cell.innerHTML = `<div>${day}</div>`;
+            return cell;
+        }
+
+        function updateCheckinButton() {
+            const btn = document.getElementById('check-in-btn');
+            if (!isLoggedIn || !currentUser) {
+                btn.disabled = true;
+                btn.textContent = '🔒 Login to Check-in';
+                return;
+            }
+            
+            const today = new Date().toISOString().split('T')[0];
+            const alreadyChecked = currentUser.checkins?.[today];
+            
+            btn.disabled = !!alreadyChecked;
+            btn.textContent = alreadyChecked ? '✅ Already Checked-in' : '✅ Check-in Today';
+        }
+
+        function markCheckin() {
+            if (!isLoggedIn || !currentUser) {
+                openAuthModal();
+                return;
+            }
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (currentUser.checkins?.[today]) {
+                showNotification('Already checked in today!', 'info');
+                return;
+            }
+            
+            if (!currentUser.checkins) currentUser.checkins = {};
+            currentUser.checkins[today] = true;
+            
+            // Update streak
+            const dates = Object.keys(currentUser.checkins).sort();
+            let streak = 1;
+            let checkDate = new Date(today);
+            
+            for (let i = dates.length - 2; i >= 0; i--) {
+                const prevDate = new Date(dates[i]);
+                const diffDays = Math.round((checkDate - prevDate) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 1) {
+                    streak++;
+                    checkDate = prevDate;
+                } else {
+                    break;
+                }
+            }
+            
+            if (!currentUser.stats) currentUser.stats = {};
+            currentUser.stats.streak = streak;
+            currentUser.stats.totalCheckins = (currentUser.stats.totalCheckins || 0) + 1;
+            
+            // Update pet happiness
+            petHappiness = Math.min(100, petHappiness + 5);
+            
+            // Check achievements
+            checkAchievements();
+            
+            saveUserData();
+            generateCalendar();
+            updateUI();
+            updateLeaderboard();
+            updateStatsPage();
+            
+            showNotification('✅ Check-in successful! +5 happiness for your pet!', 'success');
+        }
+
+        // ============ TODO FUNCTIONS ============
+        function loadTodos() {
+            if (isLoggedIn && currentUser?.todos) {
+                todos = currentUser.todos;
+            } else {
+                // Load guest todos from localStorage
+                const saved = localStorage.getItem('pomodoropal_guest_todos');
+                todos = saved ? JSON.parse(saved) : [];
+            }
+            renderTodoList();
+        }
+
+        function saveTodos() {
+            if (isLoggedIn && currentUser) {
+                currentUser.todos = todos;
+                saveUserData();
+            } else {
+                localStorage.setItem('pomodoropal_guest_todos', JSON.stringify(todos));
+            }
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todo-input');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showNotification('Please enter a task', 'error');
+                return;
+            }
+            
+            const todo = {
+                id: Date.now().toString(),
+                text: text,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            todos.push(todo);
+            saveTodos();
+            renderTodoList();
+            input.value = '';
+            
+            showNotification('Task added! ✨', 'success');
+        }
+
+        function renderTodoList() {
+            const list = document.getElementById('todo-list');
+            const countSpan = document.getElementById('todo-count');
+            
+            let filteredTodos = todos;
+            if (currentFilter === 'active') {
+                filteredTodos = todos.filter(t => !t.completed);
+            } else if (currentFilter === 'completed') {
+                filteredTodos = todos.filter(t => t.completed);
+            }
+            
+            list.innerHTML = '';
+            filteredTodos.forEach(todo => {
+                const li = document.createElement('li');
+                li.className = 'todo-item';
+                li.innerHTML = `
+                    <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
+                           onchange="toggleTodo('${todo.id}')">
+                    <span class="todo-text ${todo.completed ? 'completed' : ''}">${escapeHtml(todo.text)}</span>
+                    <button class="todo-delete" onclick="deleteTodo('${todo.id}')">Delete</button>
+                `;
+                list.appendChild(li);
+            });
+            
+            const remaining = todos.filter(t => !t.completed).length;
+            countSpan.textContent = `${remaining} task${remaining !== 1 ? 's' : ''} remaining`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                if (todo.completed && isLoggedIn) {
+                    if (!currentUser.stats) currentUser.stats = {};
+                    currentUser.stats.tasksCompleted = (currentUser.stats.tasksCompleted || 0) + 1;
+                    
+                    // Update pet happiness
+                    petHappiness = Math.min(100, petHappiness + 2);
+                    
+                    checkAchievements();
+                    saveUserData();
+                    updateStatsPage();
+                }
+                saveTodos();
+                renderTodoList();
+            }
+        }
+
+        function deleteTodo(id) {
+            todos = todos.filter(t => t.id !== id);
+            saveTodos();
+            renderTodoList();
+            showNotification('Task deleted', 'info');
+        }
+
+        function filterTodos(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTodoList();
+        }
+
+        function clearCompleted() {
+            todos = todos.filter(t => !t.completed);
+            saveTodos();
+            renderTodoList();
+            showNotification('Completed tasks cleared', 'info');
+        }
+
+        // ============ TIMER FUNCTIONS ============
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timer-display').textContent = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function setTimerMode(mode) {
+            timerMode = mode;
+            
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            let minutes = mode === 'focus' ? 25 : mode === 'short' ? 5 : 15;
+            timerSeconds = minutes * 60;
+            
+            document.getElementById('timer-mode').textContent = 
+                mode === 'focus' ? '🎯 Focus Time' : mode === 'short' ? '☕ Short Break' : '🌿 Long Break';
+            
+            updateTimerDisplay();
+            pauseTimer();
+        }
+
+        function startTimer() {
+            if (timerRunning) return;
+            
+            timerRunning = true;
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                
+                if (timerSeconds <= 0) {
+                    completeTimer();
+                }
+            }, 1000);
+            
+            showNotification('Timer started! ⏰', 'info');
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            setTimerMode(timerMode);
+        }
+
+        function completeTimer() {
+            pauseTimer();
+            
+            if (timerMode === 'focus') {
+                if (isLoggedIn && currentUser) {
+                    if (!currentUser.stats) currentUser.stats = {};
+                    currentUser.stats.focusSessions = (currentUser.stats.focusSessions || 0) + 1;
+                    currentUser.stats.totalMinutes = (currentUser.stats.totalMinutes || 0) + 25;
+                    
+                    // Update pet energy
+                    petEnergy = Math.max(0, petEnergy - 10);
+                    petHappiness = Math.min(100, petHappiness + 10);
+                    
+                    checkAchievements();
+                    saveUserData();
+                    updateStatsPage();
+                }
+                
+                showNotification('🎉 Focus session complete! Time for a break!', 'success');
+                
+                // Auto-start break
+                setTimeout(() => {
+                    setTimerMode('short');
+                    startTimer();
+                }, 3000);
+            } else {
+                showNotification('Break time is over! Ready to focus? ✨', 'info');
+                // Recharge pet energy during breaks
+                petEnergy = Math.min(100, petEnergy + 20);
+                updatePetMessage();
+            }
+        }
+
+        // ============ CUTE STATS FUNCTIONS ============
+        function updateStatsPage() {
+            if (!isLoggedIn || !currentUser) {
+                // Show placeholder for guests
+                document.getElementById('stat-streak').textContent = '0';
+                document.getElementById('stat-checkins').textContent = '0';
+                document.getElementById('stat-sessions').textContent = '0';
+                document.getElementById('stat-tasks').textContent = '0';
+                return;
+            }
+            
+            const stats = currentUser.stats || {};
+            const checkins = currentUser.checkins || {};
+            const checkinCount = Object.keys(checkins).length;
+            const tasksCompleted = stats.tasksCompleted || 0;
+            const sessions = stats.focusSessions || 0;
+            const streak = stats.streak || 0;
+            
+            // Update main stats
+            document.getElementById('stat-streak').textContent = streak;
+            document.getElementById('stat-checkins').textContent = checkinCount;
+            document.getElementById('stat-sessions').textContent = sessions;
+            document.getElementById('stat-tasks').textContent = tasksCompleted;
+            
+            // Update progress bars
+            document.getElementById('streak-progress').style.width = `${Math.min((streak / 30) * 100, 100)}%`;
+            document.getElementById('checkins-progress').style.width = `${Math.min((checkinCount / 100) * 100, 100)}%`;
+            document.getElementById('sessions-progress').style.width = `${Math.min((sessions / 50) * 100, 100)}%`;
+            document.getElementById('tasks-progress').style.width = `${Math.min((tasksCompleted / 100) * 100, 100)}%`;
+            
+            // Update trends
+            updateTrends();
+            
+            // Update pet
+            document.getElementById('pet-emoji').textContent = petType;
+            document.getElementById('pet-happiness').textContent = petHappiness;
+            document.getElementById('pet-energy').textContent = petEnergy;
+        }
+
+        function updateTrends() {
+            // Calculate trends based on last 7 days vs previous 7 days
+            const trends = calculateTrends();
+            
+            document.getElementById('streak-trend').textContent = trends.streak;
+            document.getElementById('streak-trend').className = `stat-trend ${trends.streakClass}`;
+            
+            document.getElementById('checkins-trend').textContent = trends.checkins;
+            document.getElementById('checkins-trend').className = `stat-trend ${trends.checkinsClass}`;
+            
+            document.getElementById('sessions-trend').textContent = trends.sessions;
+            document.getElementById('sessions-trend').className = `stat-trend ${trends.sessionsClass}`;
+            
+            document.getElementById('tasks-trend').textContent = trends.tasks;
+            document.getElementById('tasks-trend').className = `stat-trend ${trends.tasksClass}`;
+        }
+
+        function calculateTrends() {
+            // This would normally calculate based on historical data
+            // For now, return placeholder trends
+            return {
+                streak: '↗️ +2 from last week',
+                streakClass: 'trend-up',
+                checkins: '📊 On track',
+                checkinsClass: 'trend-neutral',
+                sessions: '🎯 Keep going!',
+                sessionsClass: 'trend-up',
+                tasks: '✨ Great job!',
+                tasksClass: 'trend-up'
+            };
+        }
+
+        function generateActivityGrid() {
+            const grid = document.getElementById('activity-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            
+            // Adjust to make Monday first
+            const weekDays = [];
+            for (let i = 1; i <= 7; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + i - 1);
+                weekDays.push(date);
+            }
+            
+            weekDays.forEach((date, index) => {
+                const dateStr = date.toISOString().split('T')[0];
+                const isActive = currentUser?.checkins?.[dateStr];
+                const dayValue = isActive ? Math.floor(Math.random() * 3) + 1 : 0; // Random activity level
+                
+                const dayEl = document.createElement('div');
+                dayEl.className = `activity-day ${isActive ? 'active' : ''}`;
+                dayEl.innerHTML = `
+                    <div class="activity-day-label">${days[index]}</div>
+                    <div class="activity-day-value">${isActive ? '✓' : '○'}</div>
+                `;
+                grid.appendChild(dayEl);
+            });
+        }
+
+        function setMood(mood) {
+            currentMood = mood;
+            
+            // Remove selected class from all mood buttons
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked button
+            event.target.classList.add('selected');
+            
+            // Save mood
+            const moodEntry = {
+                date: new Date().toISOString().split('T')[0],
+                mood: mood
+            };
+            
+            moodHistory.push(moodEntry);
+            if (isLoggedIn && currentUser) {
+                currentUser.moodHistory = moodHistory;
+                saveUserData();
+            } else {
+                localStorage.setItem('moodHistory', JSON.stringify(moodHistory));
+            }
+            
+            // Update pet message based on mood
+            updatePetMessage(mood);
+            
+            showNotification(`Mood saved: ${mood}`, 'success');
+        }
+
+        function generateAchievements() {
+            const grid = document.getElementById('achievements-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            achievements.forEach(achievement => {
+                // Update progress based on current stats
+                updateAchievementProgress(achievement);
+                
+                const card = document.createElement('div');
+                card.className = `achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}`;
+                card.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-desc">${achievement.desc}</div>
+                    <div class="achievement-progress">
+                        <div class="achievement-progress-fill" style="width: ${(achievement.progress / achievement.target) * 100}%"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-top: 0.5rem;">${achievement.progress}/${achievement.target}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateAchievementProgress(achievement) {
+            if (!isLoggedIn || !currentUser) return;
+            
+            const stats = currentUser.stats || {};
+            const checkins = currentUser.checkins || {};
+            
+            switch(achievement.id) {
+                case 'first_checkin':
+                    achievement.progress = stats.totalCheckins || 0;
+                    break;
+                case 'streak_7':
+                case 'streak_30':
+                    achievement.progress = stats.streak || 0;
+                    break;
+                case 'sessions_10':
+                case 'sessions_50':
+                    achievement.progress = stats.focusSessions || 0;
+                    break;
+                case 'tasks_20':
+                case 'tasks_100':
+                    achievement.progress = stats.tasksCompleted || 0;
+                    break;
+                case 'checkins_30':
+                    achievement.progress = Object.keys(checkins).length;
+                    break;
+                case 'perfect_week':
+                    // Check if all days this week are checked in
+                    const today = new Date();
+                    const weekDays = [];
+                    for (let i = 0; i < 7; i++) {
+                        const date = new Date(today);
+                        date.setDate(today.getDate() - i);
+                        weekDays.push(date.toISOString().split('T')[0]);
+                    }
+                    achievement.progress = weekDays.filter(d => checkins[d]).length;
+                    break;
+            }
+            
+            if (achievement.progress >= achievement.target && !achievement.unlocked) {
+                achievement.unlocked = true;
+                showNotification(`🏆 Achievement Unlocked: ${achievement.name}!`, 'success');
+                
+                // Increase pet happiness for achievement
+                petHappiness = Math.min(100, petHappiness + 20);
+            }
+        }
+
+        function checkAchievements() {
+            achievements.forEach(achievement => {
+                updateAchievementProgress(achievement);
+            });
+            
+            if (isLoggedIn && currentUser) {
+                currentUser.achievements = achievements;
+                saveUserData();
+            }
+            
+            generateAchievements();
+        }
+
+        // ============ PET FUNCTIONS ============
+        function petInteraction() {
+            if (!isLoggedIn) {
+                showNotification('Login to play with your pet!', 'info');
+                return;
+            }
+            
+            petHappiness = Math.min(100, petHappiness + 10);
+            petEnergy = Math.max(0, petEnergy - 5);
+            
+            updatePetMessage();
+            updateStatsPage();
+            
+            const messages = [
+                'You pet me! 🥰',
+                'That feels nice! ✨',
+                'I love attention! 💕',
+                'Yay! Let\'s study together! 📚',
+                'You\'re the best! ⭐'
+            ];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            document.getElementById('pet-message').textContent = randomMessage;
+            
+            setTimeout(() => {
+                updatePetMessage();
+            }, 3000);
+            
+            saveUserData();
+        }
+
+        function updatePetMessage(mood = null) {
+            if (!isLoggedIn) {
+                document.getElementById('pet-message').textContent = 'Login to have a pet! ✨';
+                return;
+            }
+            
+            const messages = [
+                'Ready to study? 📚',
+                'Let\'s be productive! ✨',
+                'You\'re doing great! ⭐',
+                'One task at a time! 💪',
+                'I believe in you! 🌟'
+            ];
+            
+            if (mood) {
+                switch(mood) {
+                    case '😊':
+                        document.getElementById('pet-message').textContent = 'You seem happy! Let\'s study! 😊';
+                        break;
+                    case '😌':
+                        document.getElementById('pet-message').textContent = 'Calm and focused, perfect! 🧘';
+                        break;
+                    case '🤔':
+                        document.getElementById('pet-message').textContent = 'Thinking hard? You got this! 💭';
+                        break;
+                    case '😴':
+                        document.getElementById('pet-message').textContent = 'Take a short break if you need! 😴';
+                        break;
+                    case '🤯':
+                        document.getElementById('pet-message').textContent = 'Don\'t stress, take it easy! 🌿';
+                        break;
+                    case '🥳':
+                        document.getElementById('pet-message').textContent = 'Celebrate your progress! 🎉';
+                        break;
+                    default:
+                        document.getElementById('pet-message').textContent = messages[Math.floor(Math.random() * messages.length)];
+                }
+            } else {
+                document.getElementById('pet-message').textContent = messages[Math.floor(Math.random() * messages.length)];
+            }
+            
+            // Update pet based on happiness and energy
+            if (petHappiness < 30) {
+                document.getElementById('pet-emoji').textContent = '😢';
+            } else if (petEnergy < 30) {
+                document.getElementById('pet-emoji').textContent = '😴';
+            } else {
+                document.getElementById('pet-emoji').textContent = petType;
+            }
+        }
+
+        function changePet(pet) {
+            petType = pet;
+            document.getElementById('pet-emoji').textContent = pet;
+            
+            if (isLoggedIn && currentUser) {
+                if (!currentUser.settings) currentUser.settings = {};
+                currentUser.settings.petType = pet;
+                saveUserData();
+            }
+            
+            showNotification(`Meet your new ${pet} friend! 🎉`, 'success');
+        }
+
+        // ============ LEADERBOARD FUNCTIONS ============
+        function showLeaderboardTab(tab) {
+            currentLeaderboardTab = tab;
+            document.querySelectorAll('.leaderboard-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            updateLeaderboard();
+        }
+
+        function updateLeaderboard() {
+            const tbody = document.getElementById('leaderboard-body');
+            const header = document.getElementById('leaderboard-stat-header');
+            
+            let sortedUsers = [];
+            let statName = '';
+            
+            switch(currentLeaderboardTab) {
+                case 'streak':
+                    sortedUsers = [...users].sort((a, b) => (b.stats?.streak || 0) - (a.stats?.streak || 0));
+                    statName = 'Current Streak';
+                    break;
+                case 'checkins':
+                    sortedUsers = [...users].sort((a, b) => (b.stats?.totalCheckins || 0) - (a.stats?.totalCheckins || 0));
+                    statName = 'Total Check-ins';
+                    break;
+                case 'sessions':
+                    sortedUsers = [...users].sort((a, b) => (b.stats?.focusSessions || 0) - (a.stats?.focusSessions || 0));
+                    statName = 'Focus Sessions';
+                    break;
+            }
+            
+            header.textContent = statName;
+            
+            tbody.innerHTML = '';
+            sortedUsers.slice(0, 10).forEach((user, index) => {
+                const row = document.createElement('tr');
+                let statValue = '';
+                
+                switch(currentLeaderboardTab) {
+                    case 'streak':
+                        statValue = user.stats?.streak || 0;
+                        break;
+                    case 'checkins':
+                        statValue = user.stats?.totalCheckins || 0;
+                        break;
+                    case 'sessions':
+                        statValue = user.stats?.focusSessions || 0;
+                        break;
+                }
+                
+                row.innerHTML = `
+                    <td><span class="rank rank-${index + 1}">#${index + 1}</span></td>
+                    <td>${user.username}</td>
+                    <td>${statValue}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Update user rank if logged in
+            const userRankCard = document.getElementById('user-rank-card');
+            if (isLoggedIn && currentUser) {
+                const rank = sortedUsers.findIndex(u => u.id === currentUser.id) + 1;
+                if (rank > 0) {
+                    userRankCard.style.display = 'block';
+                    document.getElementById('user-rank').textContent = `#${rank}`;
+                    
+                    let userStat = '';
+                    switch(currentLeaderboardTab) {
+                        case 'streak':
+                            userStat = currentUser.stats?.streak || 0;
+                            break;
+                        case 'checkins':
+                            userStat = currentUser.stats?.totalCheckins || 0;
+                            break;
+                        case 'sessions':
+                            userStat = currentUser.stats?.focusSessions || 0;
+                            break;
+                    }
+                    
+                    document.getElementById('user-rank-stats').innerHTML = 
+                        `${statName}: <strong>${userStat}</strong>`;
+                }
+            } else {
+                userRankCard.style.display = 'none';
+            }
+        }
+
+        // ============ SETTINGS FUNCTIONS ============
+        function toggleTheme() {
+            const toggle = document.getElementById('theme-toggle');
+            toggle.classList.toggle('active');
+            document.body.classList.toggle('light-mode');
+            
+            if (isLoggedIn && currentUser) {
+                if (!currentUser.settings) currentUser.settings = {};
+                currentUser.settings.theme = toggle.classList.contains('active') ? 'light' : 'dark';
+                saveUserData();
+            }
+        }
+
+        function changeFontSize(size) {
+            document.body.style.fontSize = size === 'small' ? '14px' : size === 'medium' ? '16px' : '18px';
+            
+            if (isLoggedIn && currentUser) {
+                if (!currentUser.settings) currentUser.settings = {};
+                currentUser.settings.fontSize = size;
+                saveUserData();
+            }
+        }
+
+        function toggleSetting(setting) {
+            const toggle = event.target.closest('.toggle');
+            if (!toggle) return;
+            
+            toggle.classList.toggle('active');
+            
+            if (isLoggedIn && currentUser) {
+                if (!currentUser.settings) currentUser.settings = {};
+                currentUser.settings[setting] = toggle.classList.contains('active');
+                saveUserData();
+            }
+        }
+    </script>
+</body>
+</html>
